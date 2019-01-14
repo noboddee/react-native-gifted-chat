@@ -7,96 +7,124 @@
     react/sort-comp: 0
 */
 
-import PropTypes from 'prop-types';
-import React from 'react';
+import PropTypes from 'prop-types'
+import React from 'react'
 
-import { FlatList, View, StyleSheet, Keyboard } from 'react-native';
+import { FlatList, PanResponder, View, StyleSheet, Keyboard } from 'react-native'
+import { KeyboardAwareFlatList } from 'react-native-keyboard-aware-scroll-view'
 
-import LoadEarlier from './LoadEarlier';
-import Message from './Message';
+import LoadEarlier from './LoadEarlier'
+import Message from './Message'
 
-export default class MessageContainer extends React.Component {
+export default class MessageContainer extends React.PureComponent {
 
-  componentDidMount() {
-    if (this.props.messages.length === 0) {
-      this.attachKeyboardListeners();
+  constructor (props) {
+    super(props)
+
+    this.renderRow = this.renderRow.bind(this)
+    this.renderFooter = this.renderFooter.bind(this)
+    this.renderLoadEarlier = this.renderLoadEarlier.bind(this)
+    this.renderHeaderWrapper = this.renderHeaderWrapper.bind(this)
+    this.attachKeyboardListeners = this.attachKeyboardListeners.bind(this)
+    this.detatchKeyboardListeners = this.detatchKeyboardListeners.bind(this)
+
+    if (props.messages.length === 0) {
+      this.attachKeyboardListeners(props)
     }
+
+    this._panResponder = PanResponder.create({
+      // Ask to be the responder:
+      onStartShouldSetPanResponder: (evt, gestureState) => true,
+      onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
+      onMoveShouldSetPanResponder: (evt, gestureState) => true,
+      onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
+
+      onPanResponderGrant: (evt, gestureState) => {
+        // The gesture has started. Show visual feedback so the user knows
+        // what is happening!
+
+        // gestureState.d{x,y} will be set to zero now
+      },
+      onPanResponderMove: props.invertibleScrollViewProps.onPanResponderMove,
+      onPanResponderTerminationRequest: (evt, gestureState) => true,
+      onPanResponderRelease: props.invertibleScrollViewProps.onPanResponderRelease,
+      onPanResponderTerminate: (evt, gestureState) => {
+        // Another component has become the responder, so this gesture
+        // should be cancelled
+      },
+      onShouldBlockNativeResponder: (evt, gestureState) => {
+        // Returns whether this component should block native components from becoming the JS
+        // responder. Returns true by default. Is currently only supported on android.
+        return true
+      }
+    })
   }
 
-  shouldComponentUpdate(nextProps) {
-    const next = nextProps.messages;
-    const current = this.props.messages;
-    return (
-      next.length !== current.length || next.extraData !== current.extraData || next.loadEarlier !== current.loadEarlier
-    );
-  }
-
-  componentWillReceiveProps(nextProps) {
+  componentWillReceiveProps (nextProps) {
     if (this.props.messages.length === 0 && nextProps.messages.length > 0) {
-      this.detachKeyboardListeners();
+      this.detatchKeyboardListeners()
     } else if (this.props.messages.length > 0 && nextProps.messages.length === 0) {
-      this.attachKeyboardListeners(nextProps);
+      this.attachKeyboardListeners(nextProps)
     }
   }
 
-  attachKeyboardListeners = () => {
-    const { invertibleScrollViewProps: invertibleProps } = this.props;
-    Keyboard.addListener('keyboardWillShow', invertibleProps.onKeyboardWillShow);
-    Keyboard.addListener('keyboardDidShow', invertibleProps.onKeyboardDidShow);
-    Keyboard.addListener('keyboardWillHide', invertibleProps.onKeyboardWillHide);
-    Keyboard.addListener('keyboardDidHide', invertibleProps.onKeyboardDidHide);
-  };
+  attachKeyboardListeners (props) {
+    Keyboard.addListener('keyboardWillShow', props.invertibleScrollViewProps.onKeyboardWillShow)
+    Keyboard.addListener('keyboardDidShow', props.invertibleScrollViewProps.onKeyboardDidShow)
+    Keyboard.addListener('keyboardWillHide', props.invertibleScrollViewProps.onKeyboardWillHide)
+    Keyboard.addListener('keyboardDidHide', props.invertibleScrollViewProps.onKeyboardDidHide)
+  }
 
-  detachKeyboardListeners = () => {
-    const { invertibleScrollViewProps: invertibleProps } = this.props;
-    Keyboard.removeListener('keyboardWillShow', invertibleProps.onKeyboardWillShow);
-    Keyboard.removeListener('keyboardDidShow', invertibleProps.onKeyboardDidShow);
-    Keyboard.removeListener('keyboardWillHide', invertibleProps.onKeyboardWillHide);
-    Keyboard.removeListener('keyboardDidHide', invertibleProps.onKeyboardDidHide);
-  };
+  detatchKeyboardListeners () {
+    Keyboard.removeListener('keyboardWillShow', this.props.invertibleScrollViewProps.onKeyboardWillShow)
+    Keyboard.removeListener('keyboardDidShow', this.props.invertibleScrollViewProps.onKeyboardDidShow)
+    Keyboard.removeListener('keyboardWillHide', this.props.invertibleScrollViewProps.onKeyboardWillHide)
+    Keyboard.removeListener('keyboardDidHide', this.props.invertibleScrollViewProps.onKeyboardDidHide)
+  }
 
-  renderFooter = () => {
+  renderFooter () {
     if (this.props.renderFooter) {
       const footerProps = {
-        ...this.props,
-      };
-      return this.props.renderFooter(footerProps);
+        ...this.props
+      }
+      return this.props.renderFooter(footerProps)
     }
-    return null;
-  };
+    return null
+  }
 
-  renderLoadEarlier = () => {
+  renderLoadEarlier () {
     if (this.props.loadEarlier === true) {
       const loadEarlierProps = {
-        ...this.props,
-      };
-      if (this.props.renderLoadEarlier) {
-        return this.props.renderLoadEarlier(loadEarlierProps);
+        ...this.props
       }
-      return <LoadEarlier {...loadEarlierProps} />;
+      if (this.props.renderLoadEarlier) {
+        return this.props.renderLoadEarlier(loadEarlierProps)
+      }
+      return <LoadEarlier {...loadEarlierProps} />
     }
-    return null;
-  };
+    return null
+  }
 
-  scrollTo(options) {
-    if (this.flatListRef && options) {
-      this.flatListRef.scrollToOffset(options);
+  scrollTo (options) {
+    if (this.flatListRef) {
+      console.log('scrollToPosition', options)
+      this.flatListRef.scrollToPosition(0, options.y, options.animated)
     }
   }
 
-  renderRow = ({ item, index }) => {
+  renderRow ({item, index}) {
     if (!item._id && item._id !== 0) {
-      console.warn('GiftedChat: `_id` is missing for message', JSON.stringify(item));
+      console.warn('GiftedChat: `_id` is missing for message', JSON.stringify(item))
     }
     if (!item.user) {
       if (!item.system) {
-        console.warn('GiftedChat: `user` is missing for message', JSON.stringify(item));
+        console.warn('GiftedChat: `user` is missing for message', JSON.stringify(item))
       }
-      item.user = {};
+      item.user = {}
     }
-    const { messages, ...restProps } = this.props;
-    const previousMessage = messages[index + 1] || {};
-    const nextMessage = messages[index - 1] || {};
+    const {messages, ...restProps} = this.props
+    const previousMessage = messages[index + 1] || {}
+    const nextMessage = messages[index - 1] || {}
 
     const messageProps = {
       ...restProps,
@@ -104,26 +132,29 @@ export default class MessageContainer extends React.Component {
       currentMessage: item,
       previousMessage,
       nextMessage,
-      position: item.user._id === this.props.user._id ? 'right' : 'left',
-    };
+      position: item.user._id === this.props.user._id ? 'right' : 'left'
+    }
 
     if (this.props.renderMessage) {
-      return this.props.renderMessage(messageProps);
+      return this.props.renderMessage(messageProps)
     }
-    return <Message {...messageProps} />;
-  };
+    return <Message {...messageProps} />
+  }
 
-  renderHeaderWrapper = () => <View style={styles.headerWrapper}>{this.renderLoadEarlier()}</View>;
+  renderHeaderWrapper () {
+    return <View style={styles.headerWrapper}>{this.renderLoadEarlier()}</View>
+  }
 
-  keyExtractor = (item) => `${item._id}`;
+  keyExtractor = (item) => `${item._id}`
 
-  render() {
+  render () {
     if (this.props.messages.length === 0) {
-      return <View style={styles.container} />;
+      return <View style={styles.container}/>
     }
     return (
       <View style={styles.container}>
-        <FlatList
+        <KeyboardAwareFlatList
+          enableResetScrollToCoords={false}
           ref={(ref) => (this.flatListRef = ref)}
           extraData={this.props.extraData}
           keyExtractor={this.keyExtractor}
@@ -138,27 +169,28 @@ export default class MessageContainer extends React.Component {
           ListFooterComponent={this.renderHeaderWrapper}
           ListHeaderComponent={this.renderFooter}
           {...this.props.listViewProps}
+          {...this._panResponder.panHandlers}
         />
       </View>
-    );
+    )
   }
 
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1
   },
   contentContainerStyle: {
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-end'
   },
   headerWrapper: {
-    flex: 1,
+    flex: 1
   },
   listStyle: {
-    flex: 1,
-  },
-});
+    flex: 1
+  }
+})
 
 MessageContainer.defaultProps = {
   messages: [],
@@ -170,8 +202,8 @@ MessageContainer.defaultProps = {
   loadEarlier: false,
   listViewProps: {},
   invertibleScrollViewProps: {}, // TODO: support or not?
-  extraData: null,
-};
+  extraData: null
+}
 
 MessageContainer.propTypes = {
   messages: PropTypes.arrayOf(PropTypes.object),
@@ -183,6 +215,6 @@ MessageContainer.propTypes = {
   listViewProps: PropTypes.object,
   inverted: PropTypes.bool,
   loadEarlier: PropTypes.bool,
-  invertibleScrollViewProps: PropTypes.object,
-  extraData: PropTypes.object,
-};
+  invertibleScrollViewProps: PropTypes.object, // TODO: support or not?
+  extraData: PropTypes.object
+}

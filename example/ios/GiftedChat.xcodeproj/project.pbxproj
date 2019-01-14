@@ -538,6 +538,7 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* GiftedChatTests */,
 				83CBBA001A601CBA00E9B192 /* Products */,
+				F6E43F7821EB877800764B93 /* Recovered References */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -552,6 +553,14 @@
 				2D02E4901E0B4A5D006451C7 /* GiftedChat-tvOSTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		F6E43F7821EB877800764B93 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				81CFD33950B74F9282462A42 /* libAirMaps.a */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
