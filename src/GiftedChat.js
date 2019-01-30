@@ -471,7 +471,6 @@ class GiftedChat extends React.Component {
   }
 
   focusTextInput () {
-    console.log('this.textInput', this.textInput)
     if (this.textInput) {
       this.textInput.focus()
     }
@@ -566,18 +565,23 @@ class GiftedChat extends React.Component {
     )
   }
 
-  showSubsituteKeyboard () {
+  async showSubsituteKeyboard () {
     const isShowing = this.state.subsituteKeyboardViewIsShowing
-    console.log('isShowing', isShowing)
+    this.setState({
+      subsituteKeyboardViewIsShowing: !isShowing
+    })
+
     if (!isShowing) {
+      await this.inputToolbarRef.forcePositionStay(true)
       Keyboard.dismiss()
-      setTimeout(this.inputToolbarRef.keyboardWillShow, 50)
+
+      setTimeout(() => {this.inputToolbarRef.forcePositionStay(false)}, 200)
+      // setTimeout(this.inputToolbarRef.keyboardWillShow, 200)
       if (!this.state.keyboardIsShow) {
         this.setState({
           keyboardIsShow: true
         })
         const keyboardHeight = this.getKeyboardHeight() || 335
-        console.log('keyboardHeight', keyboardHeight)
         this.setIsTypingDisabled(true)
         this.setKeyboardHeight(keyboardHeight)
         this.setBottomOffset(this.props.bottomOffset)
@@ -597,9 +601,6 @@ class GiftedChat extends React.Component {
       this.focusTextInput()
     }
 
-    this.setState({
-      subsituteKeyboardViewIsShowing: !isShowing
-    })
   }
 
   renderSubsituteKeyboardView () {

@@ -11,7 +11,7 @@ import Color from './Color';
 
 export default class InputToolbar extends React.Component {
 
-  constructor(props) {
+  constructor (props) {
     super(props);
 
     this.keyboardWillShow = this.keyboardWillShow.bind(this);
@@ -19,36 +19,43 @@ export default class InputToolbar extends React.Component {
 
     this.state = {
       position: 'absolute',
+      forcePosition: false
     };
   }
 
-  componentWillMount() {
+  componentWillMount () {
     this.keyboardWillShowListener = Keyboard.addListener('keyboardWillShow', this.keyboardWillShow);
     this.keyboardWillHideListener = Keyboard.addListener('keyboardWillHide', this.keyboardWillHide);
   }
 
-  componentWillUnmount() {
+  componentWillUnmount () {
     this.keyboardWillShowListener.remove();
     this.keyboardWillHideListener.remove();
   }
 
-  keyboardWillShow() {
-    if (this.state.position !== 'relative') {
+  async forcePositionStay (forcePosition) {
+    await this.setState({
+      forcePosition
+    });
+  }
+
+  keyboardWillShow () {
+    if (this.state.position !== 'relative' && !this.state.forcePosition) {
       this.setState({
         position: 'relative',
       });
     }
   }
 
-  keyboardWillHide() {
-    if (this.state.position !== 'absolute') {
+  keyboardWillHide () {
+    if (this.state.position !== 'absolute' && !this.state.forcePosition) {
       this.setState({
         position: 'absolute',
       });
     }
   }
 
-  renderActions() {
+  renderActions () {
     if (this.props.renderActions) {
       return this.props.renderActions(this.props);
     } else if (this.props.onPressActionButton) {
@@ -57,14 +64,14 @@ export default class InputToolbar extends React.Component {
     return null;
   }
 
-  renderSend() {
+  renderSend () {
     if (this.props.renderSend) {
       return this.props.renderSend(this.props);
     }
     return <Send {...this.props} />;
   }
 
-  renderComposer() {
+  renderComposer () {
     if (this.props.renderComposer) {
       return this.props.renderComposer(this.props);
     }
@@ -72,7 +79,7 @@ export default class InputToolbar extends React.Component {
     return <Composer {...this.props} />;
   }
 
-  renderAccessory() {
+  renderAccessory () {
     if (this.props.renderAccessory) {
       return (
         <View style={[styles.accessory, this.props.accessoryStyle]}>{this.props.renderAccessory(this.props)}</View>
@@ -81,9 +88,9 @@ export default class InputToolbar extends React.Component {
     return null;
   }
 
-  render() {
+  render () {
     return (
-      <View style={[styles.container, this.props.containerStyle, { position: this.state.position }]}>
+      <View style={[styles.container, this.props.containerStyle, {position: this.state.position}]}>
         <View style={[styles.primary, this.props.primaryStyle]}>
           {this.renderActions()}
           {this.renderComposer()}
