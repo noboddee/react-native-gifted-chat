@@ -112,6 +112,7 @@ class GiftedChat extends React.Component {
     this.initLocale()
     this.setMessages(messages || [])
     this.setTextFromProp(text)
+    setTimeout(() => {this.showSubsituteKeyboard()}, 200)
   }
 
   componentWillUnmount () {
@@ -576,12 +577,12 @@ class GiftedChat extends React.Component {
       Keyboard.dismiss()
 
       setTimeout(() => {this.inputToolbarRef.forcePositionStay(false)}, 200)
-      // setTimeout(this.inputToolbarRef.keyboardWillShow, 200)
+      setTimeout(this.inputToolbarRef.keyboardWillShow, 210)
       if (!this.state.keyboardIsShow) {
         this.setState({
           keyboardIsShow: true
         })
-        const keyboardHeight = this.getKeyboardHeight() || 335
+        const keyboardHeight = this.getKeyboardHeight() || 330
         this.setIsTypingDisabled(true)
         this.setKeyboardHeight(keyboardHeight)
         this.setBottomOffset(this.props.bottomOffset)
@@ -589,7 +590,7 @@ class GiftedChat extends React.Component {
         if (this.props.isAnimated === true) {
           Animated.timing(this.state.messagesContainerHeight, {
             toValue: newMessagesContainerHeight,
-            duration: 210
+            duration: 200
           }).start()
         } else {
           this.setState({
