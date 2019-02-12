@@ -107,12 +107,14 @@ class GiftedChat extends React.Component {
   }
 
   componentWillMount () {
-    const {messages, text} = this.props
+    const {messages, text, disableSubsituteKeyboardView = false} = this.props
     this.setIsMounted(true)
     this.initLocale()
     this.setMessages(messages || [])
     this.setTextFromProp(text)
-    setTimeout(() => {this.showSubsituteKeyboard()}, 200)
+    if (!disableSubsituteKeyboardView) {
+      setTimeout(() => {this.showSubsituteKeyboard()}, 200)
+    }
   }
 
   componentWillUnmount () {
@@ -123,6 +125,12 @@ class GiftedChat extends React.Component {
     const {messages, text} = nextProps
     this.setMessages(messages || [])
     this.setTextFromProp(text)
+  }
+
+  componentDidUpdate (prevProps, prevState) {
+    if (this.state.subsituteKeyboardViewIsShowing !== prevState.subsituteKeyboardViewIsShowing) {
+      this.props.keybordSubtitueSwitch(this.state.subsituteKeyboardViewIsShowing)
+    }
   }
 
   initLocale () {
