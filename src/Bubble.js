@@ -43,9 +43,7 @@ export default class Bubble extends React.Component {
     this.setState({
       onLoadFootDetail: true
     })
-    console.log('footId on bubble', footId)
     const foot = await this.props.getFoot(footId)
-    console.log('foot on bubble', foot)
     this.setState({
       onLoadFootDetail: false,
       foot
