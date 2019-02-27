@@ -31,6 +31,10 @@ import Send from './Send'
 import Time from './Time'
 import GiftedAvatar from './GiftedAvatar'
 
+import frLocale from 'moment/locale/fr'
+
+moment.locale('fr', frLocale)
+
 import {
   MIN_COMPOSER_HEIGHT,
   MAX_COMPOSER_HEIGHT,

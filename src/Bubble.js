@@ -1,110 +1,177 @@
 /* eslint no-use-before-define: ["error", { "variables": false }] */
 
-import PropTypes from 'prop-types';
-import React from 'react';
-import { Text, Clipboard, StyleSheet, TouchableWithoutFeedback, View, ViewPropTypes } from 'react-native';
+import moment from 'moment/moment'
+import PropTypes from 'prop-types'
+import React from 'react'
+import {
+  ActivityIndicator,
+  Text,
+  Clipboard,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View,
+  ViewPropTypes
+} from 'react-native'
 
-import MessageText from './MessageText';
-import MessageImage from './MessageImage';
-import MessageVideo from './MessageVideo';
+import MessageText from './MessageText'
+import MessageImage from './MessageImage'
+import MessageVideo from './MessageVideo'
 
-import Time from './Time';
-import Color from './Color';
+import Time from './Time'
+import Color from './Color'
 
-import { isSameUser, isSameDay } from './utils';
+import { isSameUser, isSameDay } from './utils'
 
 export default class Bubble extends React.Component {
+  state = {
+    isInvit: false,
+    onLoadFootDetail: false,
+    foot: null
+  }
+
+  componentDidMount () {
+    const {currentMessage} = this.props
+    const {isInvit, footId} = currentMessage
+
+    this.loadFoot(footId)
+    this.setState({
+      isInvit
+    })
+  }
+
+  async loadFoot (footId) {
+    this.setState({
+      onLoadFootDetail: true
+    })
+    console.log('footId on bubble', footId)
+    const foot = await this.props.getFoot(footId)
+    console.log('foot on bubble', foot)
+    this.setState({
+      onLoadFootDetail: false,
+      foot
+    })
+  }
 
   onLongPress = () => {
     if (this.props.onLongPress) {
-      this.props.onLongPress(this.context, this.props.currentMessage);
+      this.props.onLongPress(this.context, this.props.currentMessage)
     } else if (this.props.currentMessage.text) {
-      const options = ['Copy Text', 'Cancel'];
-      const cancelButtonIndex = options.length - 1;
+      const options = ['Copy Text', 'Cancel']
+      const cancelButtonIndex = options.length - 1
       this.context.actionSheet().showActionSheetWithOptions(
         {
           options,
-          cancelButtonIndex,
+          cancelButtonIndex
         },
         (buttonIndex) => {
           switch (buttonIndex) {
             case 0:
-              Clipboard.setString(this.props.currentMessage.text);
-              break;
+              Clipboard.setString(this.props.currentMessage.text)
+              break
             default:
-              break;
+              break
           }
-        },
-      );
+        }
+      )
     }
-  };
+  }
 
-  handleBubbleToNext() {
+  handleBubbleToNext () {
     if (
       isSameUser(this.props.currentMessage, this.props.nextMessage) &&
       isSameDay(this.props.currentMessage, this.props.nextMessage)
     ) {
       return StyleSheet.flatten([
         styles[this.props.position].containerToNext,
-        this.props.containerToNextStyle[this.props.position],
-      ]);
+        this.props.containerToNextStyle[this.props.position]
+      ])
     }
-    return null;
+    return null
   }
 
-  handleBubbleToPrevious() {
+  handleBubbleToPrevious () {
     if (
       isSameUser(this.props.currentMessage, this.props.previousMessage) &&
       isSameDay(this.props.currentMessage, this.props.previousMessage)
     ) {
       return StyleSheet.flatten([
         styles[this.props.position].containerToPrevious,
-        this.props.containerToPreviousStyle[this.props.position],
-      ]);
+        this.props.containerToPreviousStyle[this.props.position]
+      ])
     }
-    return null;
+    return null
   }
 
-  renderMessageText() {
+  renderMessageText () {
     if (this.props.currentMessage.text) {
-      const { containerStyle, wrapperStyle, ...messageTextProps } = this.props;
+      const {containerStyle, wrapperStyle, ...messageTextProps} = this.props
       if (this.props.renderMessageText) {
-        return this.props.renderMessageText(messageTextProps);
+        return this.props.renderMessageText(messageTextProps)
       }
-      return <MessageText {...messageTextProps} />;
+      return <MessageText {...messageTextProps} />
     }
-    return null;
+    return null
   }
 
-  renderMessageImage() {
+  renderMessageCustomText (message, textStyle = {}) {
+    if (message) {
+      const {containerStyle, wrapperStyle, ...messageTextProps} = this.props
+      if (this.props.renderMessageText) {
+        return this.props.renderMessageText(messageTextProps)
+      }
+      return <MessageText
+        {...messageTextProps}
+        customTextStyle={textStyle}
+        currentMessage={{text: message}}
+      />
+    }
+    return null
+  }
+
+  renderMessageImage () {
     if (this.props.currentMessage.image) {
-      const { containerStyle, wrapperStyle, ...messageImageProps } = this.props;
+      const {containerStyle, wrapperStyle, ...messageImageProps} = this.props
       if (this.props.renderMessageImage) {
-        return this.props.renderMessageImage(messageImageProps);
+        return this.props.renderMessageImage(messageImageProps)
       }
-      return <MessageImage {...messageImageProps} />;
+      return <MessageImage {...messageImageProps} />
     }
-    return null;
+    return null
   }
 
-  renderMessageVideo() {
+  renderMessageCustomImage (image) {
+    if (image) {
+      const {containerStyle, wrapperStyle, ...messageImageProps} = this.props
+      if (this.props.renderMessageImage) {
+        return this.props.renderMessageImage(messageImageProps)
+      }
+      return <MessageImage
+        {...messageImageProps}
+        imageStyle={styles.customImage}
+        currentMessage={{image}}
+      />
+    }
+    return null
+  }
+
+  renderMessageVideo () {
     if (this.props.currentMessage.video) {
-      const { containerStyle, wrapperStyle, ...messageVideoProps } = this.props;
+      const {containerStyle, wrapperStyle, ...messageVideoProps} = this.props
       if (this.props.renderMessageVideo) {
-        return this.props.renderMessageVideo(messageVideoProps);
+        return this.props.renderMessageVideo(messageVideoProps)
       }
-      return <MessageVideo {...messageVideoProps} />;
+      return <MessageVideo {...messageVideoProps} />
     }
-    return null;
+    return null
   }
 
-  renderTicks() {
-    const { currentMessage } = this.props;
+  renderTicks () {
+    const {currentMessage} = this.props
     if (this.props.renderTicks) {
-      return this.props.renderTicks(currentMessage);
+      return this.props.renderTicks(currentMessage)
     }
     if (currentMessage.user._id !== this.props.user._id) {
-      return null;
+      return null
     }
     if (currentMessage.sent || currentMessage.received || currentMessage.pending) {
       return (
@@ -113,45 +180,103 @@ export default class Bubble extends React.Component {
           {currentMessage.received && <Text style={[styles.tick, this.props.tickStyle]}>✓</Text>}
           {currentMessage.pending && <Text style={[styles.tick, this.props.tickStyle]}>🕓</Text>}
         </View>
-      );
+      )
     }
-    return null;
+    return null
   }
 
-  renderTime() {
+  renderTime () {
     if (this.props.currentMessage.createdAt) {
-      const { containerStyle, wrapperStyle, ...timeProps } = this.props;
+      const {containerStyle, wrapperStyle, ...timeProps} = this.props
       if (this.props.renderTime) {
-        return this.props.renderTime(timeProps);
+        return this.props.renderTime(timeProps)
       }
-      return <Time {...timeProps} />;
+      return <Time {...timeProps} />
     }
-    return null;
+    return null
   }
 
-  renderUsername() {
-    const { currentMessage } = this.props;
+  renderUsername () {
+    const {currentMessage} = this.props
     if (this.props.renderUsernameOnMessage) {
       if (currentMessage.user._id === this.props.user._id) {
-        return null;
+        return null
       }
       return (
         <View style={styles.usernameView}>
           <Text style={[styles.username, this.props.usernameStyle]}>~ {currentMessage.user.name}</Text>
         </View>
-      );
+      )
     }
-    return null;
+    return null
   }
 
-  renderCustomView() {
+  renderCustomView () {
     if (this.props.renderCustomView) {
-      return this.props.renderCustomView(this.props);
+      return this.props.renderCustomView(this.props)
     }
-    return null;
+    return null
   }
 
-  render() {
+  renderMainContainer () {
+    const {isInvit, onLoadFootDetail, foot} = this.state
+    if (!isInvit) {
+      return (
+        <View>
+          {this.renderCustomView()}
+          {this.renderMessageImage()}
+          {this.renderMessageVideo()}
+          {this.renderMessageText()}
+        </View>
+      )
+    }
+
+    if (onLoadFootDetail) {
+      return (
+        <View style={{width: 250, height: 200, justifyContent: 'center', alignItems: 'center'}}>
+          <ActivityIndicator size="large" color="#535353"/>
+        </View>
+      )
+    }
+
+    if (!foot) {
+      // Invitation plus valable
+      return this.renderMessageCustomText('La partie n\'est plus disponible')
+    }
+
+    const nberPlace = foot.get('playerNber') - foot.get('partNber')
+    const owner = foot.get('owner')
+    const place = foot.get('place')
+    const picture = place.get('picture').url()
+    const price = foot.get('price')
+      ? ` - ${foot.get('price')}€/personnes`
+      : ''
+    const date = moment(foot.get('date')).format('dddd D MMM HH:mm')
+
+    const isComplete = nberPlace < 1
+
+    const title = isComplete
+      ? `La partie de ${owner.get('pseudo')} est maintenant complète..`
+      : `${owner.get('pseudo')} cherhche ${nberPlace} ${nberPlace > 1 ? 'joueurs' : 'joueur'}. Tu es dispo ?`
+
+    const detailTxt = isComplete
+      ? null
+      : `${date} - ${nberPlace} ${nberPlace > 1 ? 'places' : 'place'} dispo${price}`
+
+    return (
+      <View>
+        {this.renderMessageCustomText(title)}
+        {this.renderMessageCustomImage(picture)}
+        <Text style={styles.detailTxt}>{detailTxt}</Text>
+        <View style={styles.placeContainer}>
+          {this.props.pinIcon()}
+          <Text style={styles.placeTxt}>{place.get('name')}</Text>
+        </View>
+      </View>
+    )
+  }
+
+  render () {
     return (
       <View style={[styles[this.props.position].container, this.props.containerStyle[this.props.position]]}>
         <View
@@ -159,7 +284,7 @@ export default class Bubble extends React.Component {
             styles[this.props.position].wrapper,
             this.props.wrapperStyle[this.props.position],
             this.handleBubbleToNext(),
-            this.handleBubbleToPrevious(),
+            this.handleBubbleToPrevious()
           ]}
         >
           <TouchableWithoutFeedback
@@ -168,10 +293,7 @@ export default class Bubble extends React.Component {
             {...this.props.touchableProps}
           >
             <View>
-              {this.renderCustomView()}
-              {this.renderMessageImage()}
-              {this.renderMessageVideo()}
-              {this.renderMessageText()}
+              {this.renderMainContainer()}
               <View style={[styles[this.props.position].bottom, this.props.bottomContainerStyle[this.props.position]]}>
                 {this.renderUsername()}
                 {this.renderTime()}
@@ -181,7 +303,7 @@ export default class Bubble extends React.Component {
           </TouchableWithoutFeedback>
         </View>
       </View>
-    );
+    )
   }
 
 }
@@ -190,74 +312,109 @@ const styles = {
   left: StyleSheet.create({
     container: {
       flex: 1,
-      alignItems: 'flex-start',
+      alignItems: 'flex-start'
     },
     wrapper: {
       borderRadius: 15,
       backgroundColor: Color.leftBubbleBackground,
       marginRight: 60,
       minHeight: 20,
-      justifyContent: 'flex-end',
+      justifyContent: 'flex-end'
     },
     containerToNext: {
-      borderBottomLeftRadius: 3,
+      borderBottomLeftRadius: 3
     },
     containerToPrevious: {
-      borderTopLeftRadius: 3,
+      borderTopLeftRadius: 3
     },
     bottom: {
       flexDirection: 'row',
-      justifyContent: 'flex-start',
-    },
+      justifyContent: 'flex-start'
+    }
   }),
   right: StyleSheet.create({
     container: {
       flex: 1,
-      alignItems: 'flex-end',
+      alignItems: 'flex-end'
     },
     wrapper: {
       borderRadius: 15,
       backgroundColor: Color.defaultBlue,
       marginLeft: 60,
       minHeight: 20,
-      justifyContent: 'flex-end',
+      justifyContent: 'flex-end'
     },
     containerToNext: {
-      borderBottomRightRadius: 3,
+      borderBottomRightRadius: 3
     },
     containerToPrevious: {
-      borderTopRightRadius: 3,
+      borderTopRightRadius: 3
     },
     bottom: {
       flexDirection: 'row',
-      justifyContent: 'flex-end',
-    },
+      justifyContent: 'flex-end'
+    }
   }),
   tick: {
     fontSize: 10,
     backgroundColor: Color.backgroundTransparent,
-    color: Color.white,
+    color: Color.white
   },
   tickView: {
     flexDirection: 'row',
-    marginRight: 10,
+    marginRight: 10
   },
   username: {
     top: -3,
     left: 0,
     fontSize: 12,
     backgroundColor: 'transparent',
-    color: '#aaa',
+    color: '#aaa'
   },
   usernameView: {
     flexDirection: 'row',
-    marginHorizontal: 10,
+    marginHorizontal: 10
   },
-};
+
+  customImage: {
+    width: '100%',
+    height: 120,
+    borderRadius: 0,
+    margin: 0,
+    resizeMode: 'cover'
+  },
+
+  detailTxt: {
+    flexWrap: 'wrap',
+    fontSize: 16,
+    fontWeight: 'bold',
+    lineHeight: 20,
+    marginTop: 5,
+    marginBottom: 5,
+    marginLeft: 10,
+    marginRight: 10
+  },
+  placeContainer: {
+    flexDirection: 'row',
+    marginLeft: 10,
+    alignItems: 'center'
+  },
+  placeTxt: {
+    color: '#535353',
+    flexWrap: 'wrap',
+    fontSize: 16,
+    fontWeight: 'bold',
+    lineHeight: 20,
+    marginTop: 5,
+    marginBottom: 5,
+    marginLeft: 10,
+    marginRight: 10
+  }
+}
 
 Bubble.contextTypes = {
-  actionSheet: PropTypes.func,
-};
+  actionSheet: PropTypes.func
+}
 
 Bubble.defaultProps = {
   touchableProps: {},
@@ -273,7 +430,7 @@ Bubble.defaultProps = {
   currentMessage: {
     text: null,
     createdAt: null,
-    image: null,
+    image: null
   },
   nextMessage: {},
   previousMessage: {},
@@ -283,8 +440,8 @@ Bubble.defaultProps = {
   tickStyle: {},
   usernameStyle: {},
   containerToNextStyle: {},
-  containerToPreviousStyle: {},
-};
+  containerToPreviousStyle: {}
+}
 
 Bubble.propTypes = {
   user: PropTypes.object.isRequired,
@@ -304,24 +461,24 @@ Bubble.propTypes = {
   previousMessage: PropTypes.object,
   containerStyle: PropTypes.shape({
     left: ViewPropTypes.style,
-    right: ViewPropTypes.style,
+    right: ViewPropTypes.style
   }),
   wrapperStyle: PropTypes.shape({
     left: ViewPropTypes.style,
-    right: ViewPropTypes.style,
+    right: ViewPropTypes.style
   }),
   bottomContainerStyle: PropTypes.shape({
     left: ViewPropTypes.style,
-    right: ViewPropTypes.style,
+    right: ViewPropTypes.style
   }),
   tickStyle: Text.propTypes.style,
   usernameStyle: Text.propTypes.style,
   containerToNextStyle: PropTypes.shape({
     left: ViewPropTypes.style,
-    right: ViewPropTypes.style,
+    right: ViewPropTypes.style
   }),
   containerToPreviousStyle: PropTypes.shape({
     left: ViewPropTypes.style,
-    right: ViewPropTypes.style,
-  }),
-};
+    right: ViewPropTypes.style
+  })
+}
