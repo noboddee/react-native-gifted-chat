@@ -68,6 +68,7 @@ class GiftedChat extends React.Component {
     this.onKeyboardWillHide = this.onKeyboardWillHide.bind(this)
     this.onKeyboardDidShow = this.onKeyboardDidShow.bind(this)
     this.onKeyboardDidHide = this.onKeyboardDidHide.bind(this)
+    this.onMoveShouldSetPanResponder = this.onMoveShouldSetPanResponder.bind(this)
     this.onPanResponderMove = this.onPanResponderMove.bind(this)
     this.onPanResponderRelease = this.onPanResponderRelease.bind(this)
     this.onSend = this.onSend.bind(this)
@@ -84,6 +85,7 @@ class GiftedChat extends React.Component {
       onKeyboardWillHide: this.onKeyboardWillHide,
       onKeyboardDidShow: this.onKeyboardDidShow,
       onKeyboardDidHide: this.onKeyboardDidHide,
+      onMoveShouldSetPanResponder: this.onMoveShouldSetPanResponder,
       onPanResponderMove: this.onPanResponderMove,
       onPanResponderRelease: this.onPanResponderRelease
     }
@@ -110,15 +112,26 @@ class GiftedChat extends React.Component {
     }
   }
 
-  componentWillMount () {
+  componentDidMount () {
     const {messages, text, disableSubsituteKeyboardView = false} = this.props
     this.setIsMounted(true)
     this.initLocale()
     this.setMessages(messages || [])
     this.setTextFromProp(text)
     if (!disableSubsituteKeyboardView) {
-      setTimeout(() => {this.showSubsituteKeyboard()}, 200)
+      this.initSubsituteKeyboardView()
     }
+  }
+
+  initSubsituteKeyboardView () {
+    setTimeout(() => {
+      console.log('run showSubsituteKeyboard in componentDidMount with this.inputToolbarRef', !this.inputToolbarRef)
+      if (!this.inputToolbarRef) {
+        this.initSubsituteKeyboardView()
+      } else {
+        this.showSubsituteKeyboard()
+      }
+    }, 200)
   }
 
   componentWillUnmount () {
@@ -387,6 +400,10 @@ class GiftedChat extends React.Component {
         }
       }
     }
+  }
+
+  onMoveShouldSetPanResponder (evt, gestureState) {
+    return !(gestureState.dx === 0 && gestureState.dy === 0)
   }
 
   onPanResponderMove (evt, gestureState) {

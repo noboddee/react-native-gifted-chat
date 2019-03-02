@@ -23,38 +23,11 @@ import Color from './Color'
 import { isSameUser, isSameDay } from './utils'
 
 export default class Bubble extends React.Component {
-  state = {
-    isInvit: false,
-    onLoadFootDetail: false,
-    foot: null
-  }
-
-  componentDidMount () {
-    const {currentMessage} = this.props
-    const {isInvit, footId} = currentMessage
-
-    this.loadFoot(footId)
-    this.setState({
-      isInvit
-    })
-  }
-
-  async loadFoot (footId) {
-    this.setState({
-      onLoadFootDetail: true
-    })
-    const foot = await this.props.getFoot(footId)
-    this.setState({
-      onLoadFootDetail: false,
-      foot
-    })
-  }
-
   onLongPress = () => {
     if (this.props.onLongPress) {
       this.props.onLongPress(this.context, this.props.currentMessage)
     } else if (this.props.currentMessage.text) {
-      const options = ['Copy Text', 'Cancel']
+      const options = ['Copier', 'Annuler']
       const cancelButtonIndex = options.length - 1
       this.context.actionSheet().showActionSheetWithOptions(
         {
@@ -217,7 +190,7 @@ export default class Bubble extends React.Component {
   }
 
   renderMainContainer () {
-    const {isInvit, onLoadFootDetail, foot} = this.state
+    const {isInvit, onLoadFootDetail, foot} = this.props
     if (!isInvit) {
       return (
         <View>

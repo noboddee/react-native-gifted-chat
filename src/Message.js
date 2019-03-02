@@ -1,25 +1,52 @@
 /* eslint react-native/no-inline-styles: 0 */
 
-import PropTypes from 'prop-types';
-import React from 'react';
-import { View, ViewPropTypes, StyleSheet } from 'react-native';
+import PropTypes from 'prop-types'
+import React from 'react'
+import {
+  TouchableWithoutFeedback,
+  TouchableHighlight,
+  TouchableOpacity,
+  Text,
+  View,
+  ViewPropTypes,
+  StyleSheet
+} from 'react-native'
+import { Avatar, Bubble, Day, SystemMessage } from 'react-native-gifted-chat'
+import { isSameDay, isSameUser } from 'react-native-gifted-chat/src/utils'
 
-import Avatar from './Avatar';
-import Bubble from './Bubble';
-import SystemMessage from './SystemMessage';
-import Day from './Day';
-
-import { isSameUser, isSameDay } from './utils';
+// import { isSameUser, isSameDay } from './utils'
 
 const styles = {
+  btnInvitContainer: {
+    zIndex: 100,
+    marginVertical: 10,
+    paddingHorizontal: 30,
+    flexDirection: 'row',
+    width: '100%'
+  },
+  invitBtn: {
+    flex: 1,
+    backgroundColor: '#3BB7B4',
+    height: 50,
+    marginHorizontal: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 6
+  },
+  invitBtnText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: 18
+  },
+
   left: StyleSheet.create({
     container: {
       flexDirection: 'row',
       alignItems: 'flex-end',
       justifyContent: 'flex-start',
       marginLeft: 8,
-      marginRight: 0,
-    },
+      marginRight: 0
+    }
   }),
   right: StyleSheet.create({
     container: {
@@ -27,16 +54,45 @@ const styles = {
       alignItems: 'flex-end',
       justifyContent: 'flex-end',
       marginLeft: 0,
-      marginRight: 8,
-    },
-  }),
-};
+      marginRight: 8
+    }
+  })
+}
 
-export default class Message extends React.Component {
+export default class MessageComp extends React.Component {
+  state = {
+    isInvit: false,
+    onLoadFootDetail: false,
+    foot: null
+  }
 
-  shouldComponentUpdate(nextProps) {
-    const next = nextProps.currentMessage;
-    const current = this.props.currentMessage;
+  componentDidMount () {
+    console.log('componentDidMount MessageComp')
+    const {currentMessage} = this.props
+    const {isInvit, footId} = currentMessage
+
+    this.loadFoot(footId)
+    this.setState({
+      isInvit
+    })
+  }
+
+  async loadFoot (footId) {
+    this.setState({
+      onLoadFootDetail: true
+    })
+    console.log('footId', footId)
+    const foot = await this.props.getFoot(footId)
+    this.setState({
+      onLoadFootDetail: false,
+      foot
+    })
+  }
+
+  shouldComponentUpdate (nextProps, nextState) {
+    const next = nextProps.currentMessage
+    const current = this.props.currentMessage
+    const currentState = this.state
     return (
       next.send !== current.send ||
       next.received !== current.received ||
@@ -44,60 +100,94 @@ export default class Message extends React.Component {
       next.createdAt !== current.createdAt ||
       next.text !== current.text ||
       next.image !== current.image ||
-      next.video !== current.video
-    );
+      next.video !== current.video ||
+      nextState.isInvit !== currentState.isInvit ||
+      nextState.onLoadFootDetail !== currentState.onLoadFootDetail ||
+      nextState.footId !== currentState.footId
+    )
   }
 
   getInnerComponentProps = () => {
-    const { containerStyle, ...props } = this.props;
+    const {containerStyle, ...props} = this.props
     return {
       ...props,
       isSameUser,
-      isSameDay,
-    };
-  };
+      isSameDay
+    }
+  }
 
-  renderDay() {
+  renderDay () {
     if (this.props.currentMessage.createdAt) {
-      const dayProps = this.getInnerComponentProps();
+      const dayProps = this.getInnerComponentProps()
       if (this.props.renderDay) {
-        return this.props.renderDay(dayProps);
+        return this.props.renderDay(dayProps)
       }
-      return <Day {...dayProps} />;
+      return <Day {...dayProps} />
     }
-    return null;
+    return null
   }
 
-  renderBubble() {
-    const bubbleProps = this.getInnerComponentProps();
+  renderBubble () {
+    const bubbleProps = this.getInnerComponentProps()
+    const {isInvit, onLoadFootDetail, foot} = this.state
+
     if (this.props.renderBubble) {
-      return this.props.renderBubble(bubbleProps);
+      return this.props.renderBubble(bubbleProps)
     }
-    return <Bubble {...bubbleProps} />;
+    return <Bubble {...bubbleProps} {...this.state}/>
   }
 
-  renderSystemMessage() {
-    const systemMessageProps = this.getInnerComponentProps();
+  renderSystemMessage () {
+    const systemMessageProps = this.getInnerComponentProps()
     if (this.props.renderSystemMessage) {
-      return this.props.renderSystemMessage(systemMessageProps);
+      return this.props.renderSystemMessage(systemMessageProps)
     }
-    return <SystemMessage {...systemMessageProps} />;
+    return <SystemMessage {...systemMessageProps} />
   }
 
-  renderAvatar() {
+  renderAvatar () {
     if (this.props.user._id === this.props.currentMessage.user._id && !this.props.showUserAvatar) {
-      return null;
+      return null
     }
-    const avatarProps = this.getInnerComponentProps();
-    const { currentMessage } = avatarProps;
+    const avatarProps = this.getInnerComponentProps()
+    const {currentMessage} = avatarProps
     if (currentMessage.user.avatar === null) {
-      return null;
+      return null
     }
-    return <Avatar {...avatarProps} />;
+    return <Avatar {...avatarProps} />
   }
 
-  render() {
-    const sameUser = isSameUser(this.props.currentMessage, this.props.nextMessage);
+  onInvitationAction (response) {
+    this.props.invitAction(this.state.footId, response, this.props.currentMessage)
+  }
+
+  renderBtn () {
+    if (!this.state.isInvit || !this.state.foot) {
+      return null
+    }
+
+    return (
+      <View style={styles.btnInvitContainer}>
+        <TouchableHighlight
+          style={styles.invitBtn}
+          onPress={() => this.onInvitationAction(false)}>
+          <View style={styles.invitBtn}>
+            <Text style={styles.invitBtnText}>NON</Text>
+          </View>
+        </TouchableHighlight>
+        <TouchableOpacity
+          style={styles.invitBtn}
+          onPress={() => this.onInvitationAction(true)}>
+          <View>
+            <Text style={styles.invitBtnText}>OUI</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+    )
+  }
+
+  render () {
+    const sameUser = isSameUser(this.props.currentMessage, this.props.nextMessage)
     return (
       <View>
         {this.renderDay()}
@@ -107,9 +197,9 @@ export default class Message extends React.Component {
           <View
             style={[
               styles[this.props.position].container,
-              { marginBottom: sameUser ? 2 : 10 },
-              !this.props.inverted && { marginBottom: 2 },
-              this.props.containerStyle[this.props.position],
+              {marginBottom: sameUser ? 2 : 10},
+              !this.props.inverted && {marginBottom: 2},
+              this.props.containerStyle[this.props.position]
             ]}
           >
             {this.props.position === 'left' ? this.renderAvatar() : null}
@@ -117,13 +207,14 @@ export default class Message extends React.Component {
             {this.props.position === 'right' ? this.renderAvatar() : null}
           </View>
         )}
+        {this.renderBtn()}
       </View>
-    );
+    )
   }
 
 }
 
-Message.defaultProps = {
+MessageComp.defaultProps = {
   renderAvatar: undefined,
   renderBubble: null,
   renderDay: null,
@@ -135,10 +226,10 @@ Message.defaultProps = {
   user: {},
   containerStyle: {},
   showUserAvatar: true,
-  inverted: true,
-};
+  inverted: true
+}
 
-Message.propTypes = {
+MessageComp.propTypes = {
   renderAvatar: PropTypes.func,
   showUserAvatar: PropTypes.bool,
   renderBubble: PropTypes.func,
@@ -152,6 +243,6 @@ Message.propTypes = {
   inverted: PropTypes.bool,
   containerStyle: PropTypes.shape({
     left: ViewPropTypes.style,
-    right: ViewPropTypes.style,
-  }),
-};
+    right: ViewPropTypes.style
+  })
+}

@@ -34,10 +34,10 @@ export default class MessageContainer extends React.PureComponent {
 
     this._panResponder = PanResponder.create({
       // Ask to be the responder:
-      onStartShouldSetPanResponder: (evt, gestureState) => true,
-      onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
-      onMoveShouldSetPanResponder: (evt, gestureState) => true,
-      onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
+      //onStartShouldSetPanResponder: (evt, gestureState) => true,
+      //onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
+      onMoveShouldSetPanResponder: props.invertibleScrollViewProps.onMoveShouldSetPanResponder,
+      //onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
 
       onPanResponderGrant: (evt, gestureState) => {
         // The gesture has started. Show visual feedback so the user knows
