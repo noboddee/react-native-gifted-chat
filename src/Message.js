@@ -63,12 +63,12 @@ export default class MessageComp extends React.Component {
   state = {
     isInvit: false,
     onLoadFootDetail: false,
+    playerIsPresent: false,
     foot: null
   }
 
   componentDidMount () {
-    console.log('componentDidMount MessageComp')
-    const {currentMessage} = this.props
+    const {currentMessage, user} = this.props
     const {isInvit, footId} = currentMessage
 
     this.loadFoot(footId)
@@ -81,11 +81,20 @@ export default class MessageComp extends React.Component {
     this.setState({
       onLoadFootDetail: true
     })
-    console.log('footId', footId)
     const foot = await this.props.getFoot(footId)
+    let playerIsPresent = false
+    if (foot) {
+      const players = foot.get('players')
+      players.forEach(player => {
+        if (this.props.user._id === player['player'].id) {
+          playerIsPresent = true
+        }
+      })
+    }
     this.setState({
       onLoadFootDetail: false,
-      foot
+      foot,
+      playerIsPresent
     })
   }
 
@@ -101,8 +110,10 @@ export default class MessageComp extends React.Component {
       next.text !== current.text ||
       next.image !== current.image ||
       next.video !== current.video ||
+      next.hasAnswer !== current.hasAnswer ||
       nextState.isInvit !== currentState.isInvit ||
       nextState.onLoadFootDetail !== currentState.onLoadFootDetail ||
+      nextState.playerIsPresent !== currentState.playerIsPresent ||
       nextState.footId !== currentState.footId
     )
   }
@@ -129,7 +140,6 @@ export default class MessageComp extends React.Component {
 
   renderBubble () {
     const bubbleProps = this.getInnerComponentProps()
-    const {isInvit, onLoadFootDetail, foot} = this.state
 
     if (this.props.renderBubble) {
       return this.props.renderBubble(bubbleProps)
@@ -162,7 +172,7 @@ export default class MessageComp extends React.Component {
   }
 
   renderBtn () {
-    if (!this.state.isInvit || !this.state.foot) {
+    if (!this.state.isInvit || !this.state.foot || this.props.currentMessage.hasAnswer || this.state.playerIsPresent) {
       return null
     }
 

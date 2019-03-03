@@ -190,7 +190,7 @@ export default class Bubble extends React.Component {
   }
 
   renderMainContainer () {
-    const {isInvit, onLoadFootDetail, foot} = this.props
+    const {isInvit, onLoadFootDetail, foot, playerIsPresent} = this.props
     if (!isInvit) {
       return (
         <View>
@@ -226,9 +226,13 @@ export default class Bubble extends React.Component {
 
     const isComplete = nberPlace < 1
 
-    const title = isComplete
+    let title = isComplete
       ? `La partie de ${owner.get('pseudo')} est maintenant complète..`
       : `${owner.get('pseudo')} cherhche ${nberPlace} ${nberPlace > 1 ? 'joueurs' : 'joueur'}. Tu es dispo ?`
+
+    if (playerIsPresent) {
+      title = 'Tu es déjà dans ce match'
+    }
 
     const detailTxt = isComplete
       ? null
