@@ -228,7 +228,7 @@ export default class Bubble extends React.Component {
 
     let title = isComplete
       ? `La partie de ${owner.get('pseudo')} est maintenant complète..`
-      : `${owner.get('pseudo')} cherhche ${nberPlace} ${nberPlace > 1 ? 'joueurs' : 'joueur'}. Tu es dispo ?`
+      : `${owner.get('pseudo')} cherche ${nberPlace} ${nberPlace > 1 ? 'joueurs' : 'joueur'}. Tu es dispo ?`
 
     if (playerIsPresent) {
       title = 'Tu es déjà dans ce match'
