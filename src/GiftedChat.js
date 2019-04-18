@@ -205,7 +205,7 @@ class GiftedChat extends React.Component {
       // For android: on-screen keyboard resized main container and has own height.
       // @see https://developer.android.com/training/keyboard-input/visibility.html
       // So for calculate the messages container height ignore keyboard height.
-      return 0
+      return this._keyboardHeight
     }
     return this._keyboardHeight
   }
@@ -294,13 +294,21 @@ class GiftedChat extends React.Component {
   }
 
   onKeyboardWillHide () {
+    const newMessagesContainerHeight = this.getBasicMessagesContainerHeight()
+
     if (this.state.subsituteKeyboardViewIsShowing) {
+      if (Platform.OS === 'android') {
+        setTimeout(() => {
+          this.setState({
+            messagesContainerHeight: newMessagesContainerHeight
+          })
+        }, 100)
+      }
       return
     }
     this.setIsTypingDisabled(true)
     // this.setKeyboardHeight(0)
     this.setBottomOffset(0)
-    const newMessagesContainerHeight = this.getBasicMessagesContainerHeight()
     if (this.props.isAnimated === true) {
       Animated.timing(this.state.messagesContainerHeight, {
         toValue: newMessagesContainerHeight,
@@ -414,7 +422,6 @@ class GiftedChat extends React.Component {
       const keyboardMove = moveY > screenHeight - keyboardHeight
       const offset = moveY - (screenHeight - keyboardHeight)
       if (keyboardMove) {
-
         const newMessagesContainerHeight = this.getMessagesContainerHeightWithKeyboard() + offset
         if (this.props.isAnimated === true) {
           Animated.timing(this.state.messagesContainerHeight, {
