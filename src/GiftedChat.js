@@ -519,9 +519,13 @@ class GiftedChat extends React.Component {
   }
 
   onInputSizeChanged (size) {
+    const add = Platform.select({
+      ios: 15,
+      android: 0
+    })
     const newComposerHeight = Math.max(
       this.props.minComposerHeight,
-      Math.min(this.props.maxComposerHeight, size.height)
+      Math.min(this.props.maxComposerHeight, size.height + add)
     )
     const newMessagesContainerHeight = this.getMessagesContainerHeightWithKeyboard(
       newComposerHeight
