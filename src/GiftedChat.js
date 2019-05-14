@@ -117,7 +117,6 @@ class GiftedChat extends React.Component {
 
   initSubsituteKeyboardView () {
     setTimeout(() => {
-      console.log('run showSubsituteKeyboard in componentDidMount with this.inputToolbarRef', !this.inputToolbarRef)
       if (!this.inputToolbarRef) {
         this.initSubsituteKeyboardView()
       } else {
@@ -257,9 +256,9 @@ class GiftedChat extends React.Component {
   /**
    * Returns the height, based on current window size, taking the keyboard into account.
    */
-  getMessagesContainerHeightWithKeyboard (composerHeight = this.state.composerHeight) {
+  getMessagesContainerHeightWithKeyboard (composerHeight = this.state.composerHeight, force = false) {
     let result = this.getBasicMessagesContainerHeight(composerHeight) - this.getKeyboardHeight() + this.getBottomOffset()
-    if (result < 0) {
+    if (result < 0 || force) {
       result = this.getBasicMessagesContainerHeight(composerHeight) - this.getKeyboardHeight(true) + this.getBottomOffset()
     }
     return result
@@ -497,7 +496,7 @@ class GiftedChat extends React.Component {
     }
     this.notifyInputTextReset()
     const newComposerHeight = MIN_COMPOSER_HEIGHT
-    const newMessagesContainerHeight = this.getMessagesContainerHeightWithKeyboard(newComposerHeight)
+    const newMessagesContainerHeight = this.getMessagesContainerHeightWithKeyboard(newComposerHeight, true)
     this.setState({
       text: this.getTextFromProp(''),
       composerHeight: newComposerHeight,
@@ -521,7 +520,8 @@ class GiftedChat extends React.Component {
       Math.min(this.props.maxComposerHeight, size.height + add)
     )
     const newMessagesContainerHeight = this.getMessagesContainerHeightWithKeyboard(
-      newComposerHeight
+      newComposerHeight,
+      true
     )
     this.setState({
       composerHeight: newComposerHeight,
