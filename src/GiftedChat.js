@@ -6,42 +6,34 @@
     react/sort-comp: 0
 */
 
+import ActionSheet from '@expo/react-native-action-sheet'
+import moment from 'moment'
+
+import frLocale from 'moment/locale/fr'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { Animated, Dimensions, Keyboard, Platform, StyleSheet, View } from 'react-native'
-
-import ActionSheet from '@expo/react-native-action-sheet'
-import moment from 'moment'
 import uuid from 'uuid'
-
-import * as utils from './utils'
 import Actions from './Actions'
 import Avatar from './Avatar'
 import Bubble from './Bubble'
-import SystemMessage from './SystemMessage'
-import MessageImage from './MessageImage'
-import MessageText from './MessageText'
 import Composer from './Composer'
+import { DATE_FORMAT, DEFAULT_PLACEHOLDER, MAX_COMPOSER_HEIGHT, MIN_COMPOSER_HEIGHT, TIME_FORMAT } from './Constant'
 import Day from './Day'
+import GiftedAvatar from './GiftedAvatar'
 import InputToolbar from './InputToolbar'
 import LoadEarlier from './LoadEarlier'
 import Message from './Message'
 import MessageContainer from './MessageContainer'
+import MessageImage from './MessageImage'
+import MessageText from './MessageText'
 import Send from './Send'
+import SystemMessage from './SystemMessage'
 import Time from './Time'
-import GiftedAvatar from './GiftedAvatar'
 
-import frLocale from 'moment/locale/fr'
+import * as utils from './utils'
 
 moment.locale('fr', frLocale)
-
-import {
-  MIN_COMPOSER_HEIGHT,
-  MAX_COMPOSER_HEIGHT,
-  DEFAULT_PLACEHOLDER,
-  TIME_FORMAT,
-  DATE_FORMAT
-} from './Constant'
 
 class GiftedChat extends React.Component {
 
@@ -267,7 +259,6 @@ class GiftedChat extends React.Component {
    */
   getMessagesContainerHeightWithKeyboard (composerHeight = this.state.composerHeight) {
     let result = this.getBasicMessagesContainerHeight(composerHeight) - this.getKeyboardHeight() + this.getBottomOffset()
-
     if (result < 0) {
       result = this.getBasicMessagesContainerHeight(composerHeight) - this.getKeyboardHeight(true) + this.getBottomOffset()
     }
@@ -299,11 +290,13 @@ class GiftedChat extends React.Component {
   }
 
   onKeyboardWillHide () {
-    const newMessagesContainerHeight = this.getBasicMessagesContainerHeight()
+    let newMessagesContainerHeight = this.getBasicMessagesContainerHeight()
 
     if (this.state.subsituteKeyboardViewIsShowing) {
       if (Platform.OS === 'android') {
+        this.setKeyboardHeight(330)
         setTimeout(() => {
+          newMessagesContainerHeight = this.getMessagesContainerHeightWithKeyboard()
           this.setState({
             messagesContainerHeight: newMessagesContainerHeight
           })
@@ -651,16 +644,17 @@ class GiftedChat extends React.Component {
 
   renderSubsituteKeyboardView () {
     const keyboardHeight = this.getKeyboardHeight()
+    const AnimatedView = this.props.isAnimated === true ? Animated.View : View
 
     if (this.props.renderSubsituteKeyboardView && this.state.subsituteKeyboardViewIsShowing) {
       return (
-        <Animated.View
+        <AnimatedView
           style={{
             height: keyboardHeight
           }}
         >
           {this.props.renderSubsituteKeyboardView()}
-        </Animated.View>
+        </AnimatedView>
       )
     }
   }
