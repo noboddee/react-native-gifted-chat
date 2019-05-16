@@ -53,7 +53,8 @@ class GiftedChat extends React.Component {
       isInitialized: false, // initialization will calculate maxHeight before rendering the chat
       composerHeight: MIN_COMPOSER_HEIGHT,
       messagesContainerHeight: null,
-      typingDisabled: false
+      typingDisabled: false,
+      subsituteKeyboardViewIsShowing: false
     }
 
     this.onKeyboardWillShow = this.onKeyboardWillShow.bind(this)
@@ -117,6 +118,7 @@ class GiftedChat extends React.Component {
 
   initSubsituteKeyboardView () {
     setTimeout(() => {
+      console.log('run showSubsituteKeyboard in componentDidMount with this.inputToolbarRef', !this.inputToolbarRef)
       if (!this.inputToolbarRef) {
         this.initSubsituteKeyboardView()
       } else {
@@ -299,7 +301,7 @@ class GiftedChat extends React.Component {
           this.setState({
             messagesContainerHeight: newMessagesContainerHeight
           })
-        }, 100)
+        }, 250)
       }
       return
     }
