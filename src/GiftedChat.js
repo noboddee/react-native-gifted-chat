@@ -118,8 +118,7 @@ class GiftedChat extends React.Component {
 
   initSubsituteKeyboardView () {
     setTimeout(() => {
-      console.log('run showSubsituteKeyboard in componentDidMount with this.inputToolbarRef', !this.inputToolbarRef)
-      if (!this.inputToolbarRef) {
+      if (!this.inputToolbarRef && !this.state.isInitialized) {
         this.initSubsituteKeyboardView()
       } else {
         this.showSubsituteKeyboard()
@@ -495,6 +494,7 @@ class GiftedChat extends React.Component {
   resetInputToolbar () {
     if (this.textInput) {
       this.textInput.clear()
+      this.textInput.focus()
     }
     this.notifyInputTextReset()
     const newComposerHeight = MIN_COMPOSER_HEIGHT
